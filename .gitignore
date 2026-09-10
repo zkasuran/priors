@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+build/
+dist/
+
+# Priors local memory store (each run keeps its own; never commit a live DB)
+.priors/
+*.db
+*.db-wal
+*.db-shm
+
+# private submission + render material, never published
+/submit/
+DEMO-*.mp4
+upload-*/
+
+# env
+.env
+.venv/
+venv/
