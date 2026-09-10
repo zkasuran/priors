@@ -173,6 +173,10 @@ def _eval_guardrail(g: dict[str, Any], agg: dict[str, Any], price: float | None)
     kind = g.get("kind")
     ev = g.get("evidence", {})
     if kind == "cap_price_below_quality":
+        # A category prior is for counterparties we do not know. A proven
+        # counterparty's own record beats it, so only apply with thin history.
+        if agg["total"] >= 2:
+            return (False, "", None)
         floor = g.get("params", {}).get("min_price")
         if price is not None and floor is not None and price <= floor:
             fr = int(round(ev.get("fail_rate", 0) * 100))
@@ -188,9 +192,9 @@ def _eval_guardrail(g: dict[str, Any], agg: dict[str, Any], price: float | None)
         if agg["total"] < min_jobs:
             return (
                 True,
-                f"Category prior: {g.get('svc_category')} counterparties without "
-                f"at least {min_jobs} graded jobs have burned us before "
-                f"(n={ev.get('n')}). No track record here yet.",
+                f"Category prior: {g.get('svc_category')} counterparties without a "
+                f"graded track record have burned us before (n={ev.get('n')}). "
+                f"No track record here yet.",
                 "caution",
             )
     return (False, "", None)
@@ -294,12 +298,20 @@ def vet(
         base_action = "transact"
         base_conf = 0.2
         score = 0.0
-        reasons.append(Reason(
-            "no-priors",
-            "No prior dealings with this counterparty and no on-chain history. "
-            "Proceeding blind, the way a stateless agent would.",
-            1.0,
-        ))
+        if triggered:
+            reasons.append(Reason(
+                "no-priors",
+                "No individual history with this counterparty; the learned "
+                "category priors below are what change the call.",
+                0.8,
+            ))
+        else:
+            reasons.append(Reason(
+                "no-priors",
+                "No prior dealings with this counterparty and no on-chain history. "
+                "Proceeding blind, the way a stateless agent would.",
+                1.0,
+            ))
     else:
         score = _score_history(agg) if agg["total"] else 0.0
         if agg["stiffed"] >= policy["avoid_if_stiffed_gte"]:

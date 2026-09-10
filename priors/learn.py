@@ -13,7 +13,6 @@ free and offline.
 
 from __future__ import annotations
 
-import statistics
 from typing import Any
 
 from .engine import DEFAULT_POLICY, aggregate
@@ -94,34 +93,45 @@ def synthesize_guardrails(mem: Memory, svc_category: str, now: Any = None) -> li
     outs = [o for o in mem.outcomes_for(svc_category=svc_category) if o.get("price") is not None]
     written: list[dict[str, Any]] = []
 
-    # Pattern A: cheap offers miss the brief.
-    # Split the category at its median price and compare miss rates.
+    # Pattern A: a cheap tier misses the brief.
+    # Find the price threshold that best SEPARATES the failing cheap tier from
+    # the rest (maximize cheap_fail - dear_fail), rather than a fixed split.
     priced = [o for o in outs if isinstance(o.get("price"), (int, float))]
     if len(priced) >= MIN_COHORT:
-        median = statistics.median(o["price"] for o in priced)
-        cheap = [o for o in priced if o["price"] <= median]
-        dear = [o for o in priced if o["price"] > median]
-        if len(cheap) >= MIN_COHORT:
-            cheap_fail = sum(_is_fail(o) for o in cheap) / len(cheap)
-            dear_fail = (sum(_is_fail(o) for o in dear) / len(dear)) if dear else 0.0
-            if cheap_fail >= FAIL_THRESH and cheap_fail > dear_fail + 0.2:
-                body = {
-                    "slug": "cheap-miss",
-                    "svc_category": svc_category,
-                    "kind": "cap_price_below_quality",
-                    "text": (
-                        f"{svc_category} offers at or below {round(median, 4)} miss the "
-                        f"brief {int(round(cheap_fail*100))}% of the time "
-                        f"(vs {int(round(dear_fail*100))}% above). Prefer the higher tier "
-                        f"or require a sample first."
-                    ),
-                    "params": {"min_price": round(median, 4)},
-                    "evidence": {"n": len(cheap), "fail_rate": round(cheap_fail, 3),
-                                 "compare_fail_rate": round(dear_fail, 3)},
-                    "learned_ts": now_iso(),
-                }
-                mem.put_guardrail(svc_category, "cheap-miss", body)
-                written.append(body)
+        uniq = sorted({o["price"] for o in priced})
+        best = None  # (separation, t, n_cheap, cheap_fail, dear_fail)
+        for t in uniq:
+            cheap = [o for o in priced if o["price"] <= t]
+            dear = [o for o in priced if o["price"] > t]
+            if len(cheap) < MIN_COHORT:
+                continue
+            cf = sum(_is_fail(o) for o in cheap) / len(cheap)
+            df = (sum(_is_fail(o) for o in dear) / len(dear)) if dear else 0.0
+            if cf < FAIL_THRESH or cf <= df + 0.2:
+                continue
+            sep = cf - df
+            cand = (sep, len(cheap), t, cf, df)
+            if best is None or cand[:2] > best[:2]:  # max separation, then larger cohort
+                best = cand
+        if best is not None:
+            _sep, n_cheap, t, cf, df = best
+            body = {
+                "slug": "cheap-miss",
+                "svc_category": svc_category,
+                "kind": "cap_price_below_quality",
+                "text": (
+                    f"{svc_category} offers at or below {round(t, 4)} miss the "
+                    f"brief {int(round(cf*100))}% of the time "
+                    f"(vs {int(round(df*100))}% above). Prefer the higher tier "
+                    f"or require a sample first."
+                ),
+                "params": {"min_price": round(t, 4)},
+                "evidence": {"n": n_cheap, "fail_rate": round(cf, 3),
+                             "compare_fail_rate": round(df, 3)},
+                "learned_ts": now_iso(),
+            }
+            mem.put_guardrail(svc_category, "cheap-miss", body)
+            written.append(body)
 
     # Pattern B: counterparties with no track record burn us on the first job.
     by_addr: dict[str, list[dict[str, Any]]] = {}

@@ -83,6 +83,12 @@ class Memory:
             if os.path.exists(p):
                 os.remove(p)
 
+    def reset(self) -> None:
+        """Wipe and re-open in place, so the same object is usable again."""
+        self.wipe()
+        Path(os.path.dirname(self.db_path)).mkdir(parents=True, exist_ok=True)
+        self._client = MemoryClient.local(self.db_path)
+
     # ---- WARM: the roster ------------------------------------------------
     def get_counterparty(self, address: str) -> dict[str, Any] | None:
         try:
