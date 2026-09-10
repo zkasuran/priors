@@ -204,11 +204,18 @@ def cmd_snapshot(args):
     data = build_snapshot(m)
     out = args.out or "dashboard/data.json"
     import os
-    os.makedirs(os.path.dirname(out), exist_ok=True) if os.path.dirname(out) else None
+    d = os.path.dirname(out)
+    if d:
+        os.makedirs(d, exist_ok=True)
     with open(out, "w") as f:
         json.dump(data, f, indent=2, default=str)
+    # also emit a JS module so the static page works with no fetch (file:// too)
+    js_path = os.path.join(d, "data.js") if d else "data.js"
+    with open(js_path, "w") as f:
+        f.write("window.PRIORS_DATA = " + json.dumps(data, default=str) + ";\n")
     m.set_snapshot({"generated_at": data["generated_at"], "counterparties": len(data["roster"])})
-    print(f"wrote {out}  ({len(data['roster'])} counterparties, {len(data['guardrails'])} guardrails)")
+    print(f"wrote {out} and {js_path}  "
+          f"({len(data['roster'])} counterparties, {len(data['guardrails'])} guardrails)")
 
 
 def cmd_demo(args):

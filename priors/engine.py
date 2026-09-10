@@ -313,58 +313,65 @@ def vet(
                 1.0,
             ))
     else:
-        score = _score_history(agg) if agg["total"] else 0.0
-        if agg["stiffed"] >= policy["avoid_if_stiffed_gte"]:
-            base_action = "avoid"
-            reasons.append(Reason(
-                "stiffed",
-                f"Stiffed us {agg['stiffed']} time(s): took the job and did not "
-                f"deliver. Policy avoids at {policy['avoid_if_stiffed_gte']}.",
-                1.0,
-            ))
-        elif agg["total"] and agg["delivery_rate"] < policy["avoid_if_delivery_rate_lt"]:
-            base_action = "avoid"
-            reasons.append(Reason(
-                "low-delivery",
-                f"Delivered only {int(agg['delivery_rate']*100)}% of "
-                f"{agg['total']} graded jobs.",
-                1.0,
-            ))
-        elif agg["total"] and (
-            agg["delivery_rate"] < policy["caution_if_delivery_rate_lt"]
-            or (agg["avg_score"] is not None and agg["avg_score"] < policy["caution_if_avg_score_lt"])
-        ):
-            base_action = "caution"
-            reasons.append(Reason(
-                "mixed-record",
-                f"Mixed record: {int(agg['delivery_rate']*100)}% delivery"
-                + (f", average score {agg['avg_score']}/10" if agg["avg_score"] is not None else "")
-                + f" over {agg['total']} jobs.",
-                0.8,
-            ))
+        if agg["total"] > 0:
+            score = _score_history(agg)
+            if agg["stiffed"] >= policy["avoid_if_stiffed_gte"]:
+                base_action = "avoid"
+                reasons.append(Reason(
+                    "stiffed",
+                    f"Stiffed us {agg['stiffed']} time(s): took the job and did not "
+                    f"deliver. Policy avoids at {policy['avoid_if_stiffed_gte']}.",
+                    1.0,
+                ))
+            elif agg["delivery_rate"] < policy["avoid_if_delivery_rate_lt"]:
+                base_action = "avoid"
+                reasons.append(Reason(
+                    "low-delivery",
+                    f"Delivered only {int(agg['delivery_rate']*100)}% of "
+                    f"{agg['total']} graded jobs.",
+                    1.0,
+                ))
+            elif (
+                agg["delivery_rate"] < policy["caution_if_delivery_rate_lt"]
+                or (agg["avg_score"] is not None and agg["avg_score"] < policy["caution_if_avg_score_lt"])
+            ):
+                base_action = "caution"
+                reasons.append(Reason(
+                    "mixed-record",
+                    f"Mixed record: {int(agg['delivery_rate']*100)}% delivery"
+                    + (f", average score {agg['avg_score']}/10" if agg["avg_score"] is not None else "")
+                    + f" over {agg['total']} jobs.",
+                    0.8,
+                ))
+            else:
+                base_action = "transact"
+                reasons.append(Reason(
+                    "good-record",
+                    f"Reliable: {int(agg['delivery_rate']*100)}% delivery"
+                    + (f", average score {agg['avg_score']}/10" if agg["avg_score"] is not None else "")
+                    + f" over {agg['total']} graded jobs.",
+                    1.0,
+                ))
+            base_conf = min(0.95, 0.35 + 0.15 * agg["total"])
+            if 0 < agg["total"] < policy["min_history_for_trust"] and base_action == "transact":
+                base_conf = min(base_conf, 0.5)
         else:
+            # no graded jobs, but there is an on-chain footprint to reason from
             base_action = "transact"
-            reasons.append(Reason(
-                "good-record",
-                f"Reliable: {int(agg['delivery_rate']*100)}% delivery"
-                + (f", average score {agg['avg_score']}/10" if agg["avg_score"] is not None else "")
-                + f" over {agg['total']} graded jobs.",
-                1.0,
-            ))
-        # confidence grows with (recency-weighted) evidence
-        base_conf = min(0.95, 0.35 + 0.15 * agg["total"])
-        if 0 < agg["total"] < policy["min_history_for_trust"] and base_action == "transact":
-            base_conf = min(base_conf, 0.5)
+            base_conf = 0.25
+            score = 0.0
+            reasons.append(Reason("no-history", "No graded jobs with this counterparty yet.", 0.6))
 
-        # on-chain prior
+        # on-chain prior (whenever we have read Base for this address)
         if onchain:
             age = onchain.get("age_days")
             txc = onchain.get("tx_count")
-            if (age is not None and age < policy["new_onchain_age_days"]) or txc == 0:
+            fresh = (age is not None and age < policy["new_onchain_age_days"]) or txc == 0
+            if fresh:
+                detail = f"{txc} txs" + (f", age {age}d" if age is not None else "")
                 reasons.append(Reason(
                     "fresh-onchain",
-                    f"On Base this address is brand new (age {age}d, {txc} txs): "
-                    f"little on-chain track record to lean on.",
+                    f"On Base this address has little on-chain track record ({detail}).",
                     0.5,
                 ))
                 if base_action == "transact":

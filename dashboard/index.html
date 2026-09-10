@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Priors — the agent that remembers who delivers</title>
+<style>
+  :root{
+    --bg:#0b0e13; --panel:#141922; --panel2:#0f141c; --border:#232c3a;
+    --ink:#e8eef6; --muted:#8a97a8; --faint:#5b6676;
+    --base:#4f7cff; --base-dim:#25407f;
+    --ok:#3fb950; --warn:#d8a531; --bad:#f0564b;
+    --shadow:0 10px 30px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  a{color:var(--base);text-decoration:none} a:hover{text-decoration:underline}
+  .wrap{max-width:1080px;margin:0 auto;padding:32px 22px 80px}
+  code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  header{display:flex;flex-wrap:wrap;align-items:flex-end;gap:16px;justify-content:space-between}
+  .brand{display:flex;align-items:baseline;gap:12px}
+  .logo{font-size:30px;font-weight:800;letter-spacing:-.02em}
+  .logo b{color:var(--base)}
+  .tag{color:var(--muted);font-size:14px;max-width:520px}
+  .meta{color:var(--faint);font-size:12.5px;text-align:right}
+  .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;
+    border:1px solid var(--border);color:var(--muted);background:var(--panel2)}
+  .btn{cursor:pointer;border:1px solid var(--border);background:var(--panel);color:var(--ink);
+    padding:9px 14px;border-radius:10px;font-weight:600;font-size:13px}
+  .btn:hover{border-color:var(--base-dim)}
+  .btn.armed{background:#2a1113;border-color:var(--bad);color:#ffd7d2}
+  .callout{margin:22px 0;padding:16px 18px;border:1px solid var(--border);border-left:3px solid var(--base);
+    border-radius:12px;background:linear-gradient(180deg,var(--panel),var(--panel2));color:var(--muted)}
+  .callout b{color:var(--ink)}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:20px 0}
+  .tile{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+  .tile .n{font-size:26px;font-weight:800;letter-spacing:-.02em}
+  .tile .l{color:var(--muted);font-size:12px;margin-top:2px}
+  h2{font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);
+    margin:34px 0 12px;font-weight:700}
+  .guard{display:grid;grid-template-columns:1fr;gap:10px}
+  .gcard{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:13px 15px;
+    display:flex;gap:12px;align-items:flex-start}
+  .gcard .mk{color:var(--warn);font-size:18px;line-height:1.2}
+  .gcard .ev{color:var(--faint);font-size:12px;margin-top:3px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--panel);
+    border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+  th{color:var(--faint);font-size:11px;letter-spacing:.05em;text-transform:uppercase;font-weight:700}
+  tr:last-child td{border-bottom:none}
+  td.wide{white-space:normal;color:var(--muted);font-size:12.5px}
+  .v{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:12px;
+    padding:3px 9px;border-radius:7px;border:1px solid transparent}
+  .v.transact{color:var(--ok);background:rgba(63,185,80,.1);border-color:rgba(63,185,80,.3)}
+  .v.caution{color:var(--warn);background:rgba(216,165,49,.1);border-color:rgba(216,165,49,.3)}
+  .v.avoid{color:var(--bad);background:rgba(240,86,75,.1);border-color:rgba(240,86,75,.3)}
+  .dot{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block}
+  .oc{font-size:11px;color:var(--base);border:1px solid var(--base-dim);border-radius:6px;padding:1px 6px}
+  .feed{display:grid;gap:6px}
+  .fe{display:flex;gap:10px;align-items:center;font-size:13px;color:var(--muted);
+    padding:7px 12px;background:var(--panel);border:1px solid var(--border);border-radius:9px}
+  .fe .oc-out{font-weight:700;width:74px}
+  .fe .delivered,.fe .late{color:var(--ok)} .fe .partial{color:var(--warn)} .fe .stiffed{color:var(--bad)}
+  footer{margin-top:44px;color:var(--faint);font-size:12.5px;border-top:1px solid var(--border);padding-top:18px}
+  .deleted #tiles,.deleted #guards,.deleted #feed{opacity:.25;filter:grayscale(1)}
+  .del-banner{display:none;margin:22px 0;padding:14px 18px;border:1px solid var(--bad);
+    border-radius:12px;background:#2a1113;color:#ffd7d2;font-weight:600}
+  .deleted .del-banner{display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="brand"><div class="logo">Prior<b>s</b></div></div>
+      <div class="tag">The buyer agent that turns every outcome into a prior that changes its next decision. Its memory is the product.</div>
+    </div>
+    <div class="meta">
+      <div><span class="pill" id="synthetic">synthetic demo data</span></div>
+      <div style="margin-top:8px">reputation snapshot · <span id="gen">—</span></div>
+      <div style="margin-top:8px"><button class="btn" id="toggle">Delete the memory (demo)</button></div>
+    </div>
+  </header>
+
+  <div class="callout">
+    <b>Delete the memory and this page goes blank.</b> Every verdict below is read from a
+    persistent, file-based memory (Sibyl Memory). Strip that layer out and Priors has no roster,
+    no outcome ledger and no learned guardrails: it treats every counterparty as a stranger and
+    transacts blind. Press <i>Delete the memory</i> to see the collapse.
+  </div>
+
+  <div class="del-banner">Memory deleted. Every counterparty is a stranger again. Priors transacts blind.</div>
+
+  <div class="tiles" id="tiles"></div>
+
+  <div id="guards"><h2>Learned guardrails (reflection over the ledger)</h2><div class="guard" id="guardlist"></div></div>
+
+  <h2>Reputation ledger</h2>
+  <div style="overflow-x:auto"><table id="ledger"><thead><tr>
+    <th>Verdict</th><th>Counterparty</th><th>Address (Base Sepolia)</th><th>Jobs</th>
+    <th>Delivered</th><th>Avg score</th><th>Avg price</th><th class="wide">Why</th>
+  </tr></thead><tbody id="rows"></tbody></table></div>
+
+  <div id="feed"><h2>Recent graded outcomes</h2><div class="feed" id="feedlist"></div></div>
+
+  <footer>
+    Built on <a href="https://github.com/Sibyl-Labs/Sibyl-Memory">Sibyl Memory</a> (local-first SQLite + FTS5, MIT).
+    On-chain read priors and EAS attestations run on <b>Base Sepolia</b>. Packaged as a Virtuals-marketplace buyer agent.
+    MIT licensed. Roster shown is synthetic demo data.
+  </footer>
+</div>
+
+<script src="./data.js" onerror="loadJSON()"></script>
+<script>
+const EXPLORER = "https://sepolia.basescan.org/address/";
+function loadJSON(){ fetch("./data.json").then(r=>r.json()).then(d=>{window.PRIORS_DATA=d;render();}).catch(()=>{}); }
+function short(a){ return a && a.length>12 ? a.slice(0,6)+"…"+a.slice(-4) : (a||""); }
+function pct(x){ return x==null?"—":Math.round(x*100)+"%"; }
+let deleted=false;
+
+function render(){
+  const d = window.PRIORS_DATA; if(!d) return;
+  document.getElementById("gen").textContent = (d.generated_at||"").replace("T"," ").replace("Z"," UTC");
+  document.getElementById("synthetic").style.display = d.synthetic ? "" : "none";
+  const counts = {transact:0,caution:0,avoid:0};
+  (d.roster||[]).forEach(r=>counts[r.verdict]++);
+  const tiles = deleted
+    ? [["—","counterparties"],["—","graded outcomes"],["0","guardrails"],["all","transact · blind"]]
+    : [[d.stats.counterparties,"counterparties"],[d.stats.outcomes,"graded outcomes"],
+       [d.stats.guardrails,"learned guardrails"],
+       [counts.avoid+" / "+counts.caution+" / "+counts.transact,"avoid / caution / transact"]];
+  document.getElementById("tiles").innerHTML = tiles.map(t=>
+    `<div class="tile"><div class="n">${t[0]}</div><div class="l">${t[1]}</div></div>`).join("");
+
+  document.getElementById("guardlist").innerHTML = (d.guardrails||[]).map(g=>
+    `<div class="gcard"><div class="mk">⚑</div><div><div>${g.text}</div>
+     <div class="ev">evidence: n=${(g.evidence||{}).n}, miss rate ${pct((g.evidence||{}).fail_rate)} · category ${g.svc_category}</div></div></div>`).join("");
+
+  document.getElementById("rows").innerHTML = (d.roster||[]).map(r=>{
+    const v = deleted ? "transact" : r.verdict;
+    const vlabel = deleted ? "TRANSACT · blind" : r.verdict.toUpperCase();
+    const oc = r.onchain ? ` <span class="oc">${r.onchain.tx_count} tx</span>` : "";
+    return `<tr>
+      <td><span class="v ${v}"><span class="dot"></span>${vlabel}</span></td>
+      <td>${r.label||"?"}</td>
+      <td><a class="mono" href="${EXPLORER}${r.address}" target="_blank" rel="noopener">${short(r.address)}</a>${oc}</td>
+      <td>${deleted?"—":r.jobs}</td>
+      <td>${deleted?"—":pct(r.delivery_rate)}</td>
+      <td>${deleted?"—":(r.avg_score==null?"—":r.avg_score+"/10")}</td>
+      <td>${deleted?"—":(r.avg_price==null?"—":r.avg_price)}</td>
+      <td class="wide">${deleted?"No memory: no priors to reason from.":r.reason}</td>
+    </tr>`;}).join("");
+
+  document.getElementById("feedlist").innerHTML = (d.recent_outcomes||[]).slice(0,14).map(o=>
+    `<div class="fe"><span class="oc-out ${o.outcome}">${o.outcome}</span>
+     <span>${short(o.address)}</span>
+     <span style="color:var(--faint)">${o.svc_category||""} · ${o.score==null?"":o.score+"/10"} · ${o.price==null?"":o.price} · ${(o.ts||"").slice(0,10)}</span>
+     <span style="flex:1"></span><span style="color:var(--faint)">${o.task||""}</span></div>`).join("");
+}
+
+document.getElementById("toggle").addEventListener("click", ()=>{
+  deleted=!deleted;
+  document.body.classList.toggle("deleted", deleted);
+  const b=document.getElementById("toggle");
+  b.textContent = deleted ? "Restore the memory" : "Delete the memory (demo)";
+  b.classList.toggle("armed", deleted);
+  render();
+});
+render();
+</script>
+</body>
+</html>
