@@ -1,6 +1,6 @@
 {
   "product": "Priors",
-  "generated_at": "2026-09-10T02:25:39.056558Z",
+  "generated_at": "2026-09-10T03:48:06.516875Z",
   "synthetic": true,
   "stats": {
     "counterparties": 11,
@@ -209,7 +209,7 @@
         "n": 10,
         "fail_rate": 0.7
       },
-      "learned_ts": "2026-09-10T02:21:40.824035Z"
+      "learned_ts": "2026-09-10T03:48:06.100721Z"
     },
     {
       "slug": "cheap-miss",
@@ -224,7 +224,7 @@
         "fail_rate": 1.0,
         "compare_fail_rate": 0.1
       },
-      "learned_ts": "2026-09-10T02:21:40.823104Z"
+      "learned_ts": "2026-09-10T03:48:06.098368Z"
     }
   ],
   "recent_outcomes": [
@@ -236,7 +236,7 @@
       "price": 5.0,
       "task": "cover art",
       "notes": null,
-      "ts": "2026-09-09T02:21:40.761420Z"
+      "ts": "2026-09-09T03:48:05.929252Z"
     },
     {
       "address": "0xa11ce00000000000000000000000000000000001",
@@ -246,17 +246,7 @@
       "price": 2.0,
       "task": "reaction pack",
       "notes": null,
-      "ts": "2026-09-09T02:21:40.761420Z"
-    },
-    {
-      "address": "0xc0ffee0000000000000000000000000000000003",
-      "svc_category": "image",
-      "outcome": "partial",
-      "score": 4,
-      "price": 2.5,
-      "task": "icon sheet",
-      "notes": null,
-      "ts": "2026-09-08T02:21:40.761420Z"
+      "ts": "2026-09-09T03:48:05.929252Z"
     },
     {
       "address": "0x0000000000000000000000000000000000000ba6",
@@ -266,7 +256,17 @@
       "price": 0.7,
       "task": "icon",
       "notes": null,
-      "ts": "2026-09-08T02:21:40.761420Z"
+      "ts": "2026-09-08T03:48:05.929252Z"
+    },
+    {
+      "address": "0xc0ffee0000000000000000000000000000000003",
+      "svc_category": "image",
+      "outcome": "partial",
+      "score": 4,
+      "price": 2.5,
+      "task": "icon sheet",
+      "notes": null,
+      "ts": "2026-09-08T03:48:05.929252Z"
     },
     {
       "address": "0x0000000000000000000000000000000000000c01",
@@ -276,7 +276,7 @@
       "price": 1.0,
       "task": "product blurb",
       "notes": null,
-      "ts": "2026-09-08T02:21:40.761420Z"
+      "ts": "2026-09-08T03:48:05.929252Z"
     },
     {
       "address": "0xa11ce00000000000000000000000000000000001",
@@ -286,7 +286,7 @@
       "price": 2.0,
       "task": "banner variations",
       "notes": null,
-      "ts": "2026-09-07T02:21:40.761420Z"
+      "ts": "2026-09-07T03:48:05.929252Z"
     },
     {
       "address": "0x0000000000000000000000000000000000000ba5",
@@ -296,7 +296,7 @@
       "price": 0.6,
       "task": "logo",
       "notes": null,
-      "ts": "2026-09-07T02:21:40.761420Z"
+      "ts": "2026-09-07T03:48:05.929252Z"
     },
     {
       "address": "0xf00d000000000000000000000000000000000004",
@@ -306,27 +306,7 @@
       "price": 5.0,
       "task": "print poster",
       "notes": null,
-      "ts": "2026-09-07T02:21:40.761420Z"
-    },
-    {
-      "address": "0xbad0000000000000000000000000000000000002",
-      "svc_category": "image",
-      "outcome": "stiffed",
-      "score": 0,
-      "price": 1.0,
-      "task": "retry logo",
-      "notes": null,
-      "ts": "2026-09-06T02:21:40.761420Z"
-    },
-    {
-      "address": "0xc0ffee0000000000000000000000000000000003",
-      "svc_category": "image",
-      "outcome": "late",
-      "score": 6,
-      "price": 2.5,
-      "task": "carousel set",
-      "notes": null,
-      "ts": "2026-09-06T02:21:40.761420Z"
+      "ts": "2026-09-07T03:48:05.929252Z"
     },
     {
       "address": "0x0000000000000000000000000000000000000ba4",
@@ -336,7 +316,27 @@
       "price": 0.5,
       "task": "banner",
       "notes": null,
-      "ts": "2026-09-06T02:21:40.761420Z"
+      "ts": "2026-09-06T03:48:05.929252Z"
+    },
+    {
+      "address": "0xc0ffee0000000000000000000000000000000003",
+      "svc_category": "image",
+      "outcome": "late",
+      "score": 6,
+      "price": 2.5,
+      "task": "carousel set",
+      "notes": null,
+      "ts": "2026-09-06T03:48:05.929252Z"
+    },
+    {
+      "address": "0xbad0000000000000000000000000000000000002",
+      "svc_category": "image",
+      "outcome": "stiffed",
+      "score": 0,
+      "price": 1.0,
+      "task": "retry logo",
+      "notes": null,
+      "ts": "2026-09-06T03:48:05.929252Z"
     },
     {
       "address": "0x0000000000000000000000000000000000000ba3",
@@ -346,7 +346,7 @@
       "price": 0.6,
       "task": "avatar",
       "notes": null,
-      "ts": "2026-09-05T02:21:40.761420Z"
+      "ts": "2026-09-05T03:48:05.929252Z"
     },
     {
       "address": "0xf00d000000000000000000000000000000000004",
@@ -356,7 +356,7 @@
       "price": 5.0,
       "task": "hero illustration",
       "notes": null,
-      "ts": "2026-09-05T02:21:40.761420Z"
+      "ts": "2026-09-05T03:48:05.929252Z"
     },
     {
       "address": "0x0000000000000000000000000000000000000c01",
@@ -366,7 +366,7 @@
       "price": 1.0,
       "task": "tagline",
       "notes": null,
-      "ts": "2026-09-05T02:21:40.761420Z"
+      "ts": "2026-09-05T03:48:05.929252Z"
     },
     {
       "address": "0xa11ce00000000000000000000000000000000001",
@@ -376,7 +376,7 @@
       "price": 2.0,
       "task": "mascot sticker set",
       "notes": null,
-      "ts": "2026-09-04T02:21:40.761420Z"
+      "ts": "2026-09-04T03:48:05.929252Z"
     },
     {
       "address": "0xc0ffee0000000000000000000000000000000003",
@@ -386,7 +386,7 @@
       "price": 2.5,
       "task": "thumbnail",
       "notes": null,
-      "ts": "2026-09-04T02:21:40.761420Z"
+      "ts": "2026-09-04T03:48:05.929252Z"
     },
     {
       "address": "0x0000000000000000000000000000000000000ba2",
@@ -396,17 +396,7 @@
       "price": 0.5,
       "task": "sticker",
       "notes": null,
-      "ts": "2026-09-04T02:21:40.761420Z"
-    },
-    {
-      "address": "0x0000000000000000000000000000000000000ba1",
-      "svc_category": "image",
-      "outcome": "stiffed",
-      "score": 0,
-      "price": 0.5,
-      "task": "quick meme",
-      "notes": null,
-      "ts": "2026-09-03T02:21:40.761420Z"
+      "ts": "2026-09-04T03:48:05.929252Z"
     },
     {
       "address": "0xbad0000000000000000000000000000000000002",
@@ -416,7 +406,17 @@
       "price": 1.0,
       "task": "logo draft",
       "notes": null,
-      "ts": "2026-09-03T02:21:40.761420Z"
+      "ts": "2026-09-03T03:48:05.929252Z"
+    },
+    {
+      "address": "0x0000000000000000000000000000000000000ba1",
+      "svc_category": "image",
+      "outcome": "stiffed",
+      "score": 0,
+      "price": 0.5,
+      "task": "quick meme",
+      "notes": null,
+      "ts": "2026-09-03T03:48:05.929252Z"
     },
     {
       "address": "0xa11ce00000000000000000000000000000000001",
@@ -426,7 +426,7 @@
       "price": 2.0,
       "task": "launch meme",
       "notes": null,
-      "ts": "2026-09-02T02:21:40.761420Z"
+      "ts": "2026-09-02T03:48:05.929252Z"
     }
   ]
 }
