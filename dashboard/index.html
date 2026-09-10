@@ -4,126 +4,465 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Priors — the agent that remembers who delivers</title>
+<meta name="description" content="Priors is a buyer agent that turns every job outcome into a verifiable prior that changes its next decision. Its memory is the product. Delete the memory and it transacts blind." />
+<meta property="og:title" content="Priors — memory is the product" />
+<meta property="og:description" content="A buyer agent whose every decision is read deterministically from memory. Delete the memory layer and it collapses to blind, stateless behavior — asserted as a passing test." />
+<meta property="og:type" content="website" />
 <style>
   :root{
-    --bg:#0b0e13; --panel:#141922; --panel2:#0f141c; --border:#232c3a;
+    --bg:#0b0e13; --bg2:#090c11; --panel:#141922; --panel2:#0f141c; --border:#232c3a;
     --ink:#e8eef6; --muted:#8a97a8; --faint:#5b6676;
-    --base:#4f7cff; --base-dim:#25407f;
+    --base:#4f7cff; --base-2:#7aa0ff; --base-dim:#25407f;
     --ok:#3fb950; --warn:#d8a531; --bad:#f0564b;
-    --shadow:0 10px 30px rgba(0,0,0,.4);
+    --shadow:0 18px 50px rgba(0,0,0,.45);
+    --radius:16px;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);
-    font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  html{scroll-behavior:smooth}
+  body{margin:0;background:
+      radial-gradient(1100px 620px at 78% -8%,rgba(79,124,255,.16),transparent 60%),
+      radial-gradient(900px 520px at 8% 4%,rgba(63,185,80,.06),transparent 55%),
+      var(--bg);
+    color:var(--ink);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     -webkit-font-smoothing:antialiased}
   a{color:var(--base);text-decoration:none} a:hover{text-decoration:underline}
-  .wrap{max-width:1080px;margin:0 auto;padding:32px 22px 80px}
   code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-  header{display:flex;flex-wrap:wrap;align-items:flex-end;gap:16px;justify-content:space-between}
-  .brand{display:flex;align-items:baseline;gap:12px}
-  .logo{font-size:30px;font-weight:800;letter-spacing:-.02em}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+  .muted{color:var(--muted)} .faint{color:var(--faint)}
+
+  /* ---------- top nav ---------- */
+  nav{position:sticky;top:0;z-index:40;backdrop-filter:blur(10px);
+    background:linear-gradient(180deg,rgba(11,14,19,.92),rgba(11,14,19,.72));
+    border-bottom:1px solid var(--border)}
+  nav .wrap{display:flex;align-items:center;gap:18px;height:60px}
+  .logo{font-size:21px;font-weight:800;letter-spacing:-.02em}
   .logo b{color:var(--base)}
-  .tag{color:var(--muted);font-size:14px;max-width:520px}
-  .meta{color:var(--faint);font-size:12.5px;text-align:right}
-  .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;
-    border:1px solid var(--border);color:var(--muted);background:var(--panel2)}
-  .btn{cursor:pointer;border:1px solid var(--border);background:var(--panel);color:var(--ink);
-    padding:9px 14px;border-radius:10px;font-weight:600;font-size:13px}
-  .btn:hover{border-color:var(--base-dim)}
-  .btn.armed{background:#2a1113;border-color:var(--bad);color:#ffd7d2}
-  .callout{margin:22px 0;padding:16px 18px;border:1px solid var(--border);border-left:3px solid var(--base);
-    border-radius:12px;background:linear-gradient(180deg,var(--panel),var(--panel2));color:var(--muted)}
-  .callout b{color:var(--ink)}
-  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:20px 0}
-  .tile{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
-  .tile .n{font-size:26px;font-weight:800;letter-spacing:-.02em}
+  nav .links{display:flex;gap:22px;margin-left:auto;font-size:14px}
+  nav .links a{color:var(--muted)} nav .links a:hover{color:var(--ink);text-decoration:none}
+  .ghost{border:1px solid var(--border);border-radius:9px;padding:7px 13px;color:var(--ink)!important;font-weight:600}
+  .ghost:hover{border-color:var(--base-dim);text-decoration:none!important}
+  @media(max-width:720px){nav .links a:not(.ghost){display:none}}
+
+  /* ---------- hero ---------- */
+  .hero{padding:74px 0 34px;position:relative}
+  .badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+  .chip{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;font-size:12.5px;
+    font-weight:600;border:1px solid var(--border);color:var(--muted);background:var(--panel2)}
+  .chip .d{width:7px;height:7px;border-radius:50%;background:var(--base)}
+  h1{font-size:clamp(34px,6vw,58px);line-height:1.04;letter-spacing:-.03em;margin:0 0 18px;font-weight:800}
+  h1 .hl{background:linear-gradient(90deg,var(--base-2),var(--base));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lede{font-size:clamp(17px,2.4vw,21px);color:var(--muted);max-width:680px;margin:0 0 12px}
+  .thesis{font-size:clamp(17px,2.4vw,21px);max-width:680px;margin:0 0 30px}
+  .thesis b{color:var(--ink)}
+  .cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+  .btn{cursor:pointer;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);
+    background:var(--panel);color:var(--ink);padding:12px 18px;border-radius:11px;font-weight:700;font-size:14.5px;
+    transition:.15s}
+  .btn:hover{text-decoration:none;transform:translateY(-1px)}
+  .btn.primary{background:linear-gradient(180deg,var(--base),#3b63d6);border-color:#3b63d6;box-shadow:0 8px 22px rgba(79,124,255,.32)}
+  .btn.primary:hover{box-shadow:0 12px 28px rgba(79,124,255,.42)}
+
+  /* ---------- terminal card ---------- */
+  .term{margin-top:38px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;
+    box-shadow:var(--shadow);background:var(--panel2)}
+  .term .bar{display:flex;align-items:center;gap:8px;padding:11px 15px;background:#10151d;border-bottom:1px solid var(--border)}
+  .term .bar .dot{width:11px;height:11px;border-radius:50%}
+  .term .bar .r{background:#ff5f57}.term .bar .y{background:#febc2e}.term .bar .g{background:#28c840}
+  .term .bar .t{margin-left:8px;color:var(--faint);font-size:12.5px}
+  .term pre{margin:0;padding:18px 18px 20px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:13px;line-height:1.7;overflow-x:auto}
+  .cmd{color:var(--base-2)} .prompt{color:var(--faint)}
+  .ok{color:var(--ok)} .warn{color:var(--warn)} .bad{color:var(--bad)} .dim{color:var(--faint)}
+  .kbadge{padding:1px 8px;border-radius:6px;font-weight:800;font-size:12px}
+  .kbadge.transact{color:var(--ok);background:rgba(63,185,80,.14)}
+  .kbadge.avoid{color:var(--bad);background:rgba(240,86,75,.14)}
+  .kbadge.caution{color:var(--warn);background:rgba(216,165,49,.14)}
+
+  /* ---------- sections ---------- */
+  section{padding:56px 0;border-top:1px solid var(--border)}
+  .eyebrow{font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--base);font-weight:700;margin:0 0 12px}
+  h2{font-size:clamp(24px,3.4vw,34px);letter-spacing:-.02em;margin:0 0 14px;font-weight:800}
+  .sub{color:var(--muted);max-width:720px;margin:0 0 30px;font-size:16.5px}
+
+  /* problem/solution split */
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:760px){.split{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:22px}
+  .card h3{margin:0 0 8px;font-size:17px}
+  .card.bad-b{border-top:3px solid var(--bad)}
+  .card.good-b{border-top:3px solid var(--ok)}
+  .card p{margin:0;color:var(--muted);font-size:14.5px}
+
+  /* loop steps */
+  .loop{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;counter-reset:s}
+  @media(max-width:820px){.loop{grid-template-columns:1fr}}
+  .step{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative}
+  .step::before{counter-increment:s;content:counter(s);position:absolute;top:16px;right:18px;
+    font-weight:800;font-size:30px;color:var(--border);letter-spacing:-.03em}
+  .step h4{margin:0 0 6px;font-size:15.5px}
+  .step p{margin:0;color:var(--muted);font-size:14px}
+  .step .k{color:var(--base);font-weight:700}
+
+  /* two-mechanism cards */
+  .mech{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:760px){.mech{grid-template-columns:1fr}}
+  .mech .card{border-left:3px solid var(--base)}
+  .mech ul{margin:12px 0 0;padding-left:18px;color:var(--muted);font-size:14px}
+  .mech li{margin:5px 0}
+  .mech .flip{margin-top:14px;font-family:ui-monospace,monospace;font-size:13px;color:var(--faint)}
+
+  /* architecture / stores table */
+  .tbl{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--panel);
+    border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+  .tbl th,.tbl td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  .tbl th{color:var(--faint);font-size:11px;letter-spacing:.05em;text-transform:uppercase;font-weight:700}
+  .tbl tr:last-child td{border-bottom:none}
+  .tier{display:inline-block;padding:1px 8px;border-radius:6px;font-size:11px;font-weight:700;
+    border:1px solid var(--border);color:var(--base-2)}
+
+  .flow{background:var(--panel2);border:1px solid var(--border);border-radius:var(--radius);
+    padding:20px;overflow-x:auto;margin-top:20px}
+  .flow pre{margin:0;font-size:12.5px;line-height:1.7;color:var(--muted)}
+
+  /* live demo */
+  .demo{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--border);
+    border-radius:var(--radius);padding:24px}
+  .demo .hd{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:18px 0}
+  .tile{background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+  .tile .n{font-size:24px;font-weight:800;letter-spacing:-.02em}
   .tile .l{color:var(--muted);font-size:12px;margin-top:2px}
-  h2{font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);
-    margin:34px 0 12px;font-weight:700}
-  .guard{display:grid;grid-template-columns:1fr;gap:10px}
-  .gcard{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:13px 15px;
-    display:flex;gap:12px;align-items:flex-start}
-  .gcard .mk{color:var(--warn);font-size:18px;line-height:1.2}
-  .gcard .ev{color:var(--faint);font-size:12px;margin-top:3px}
-  table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--panel);
-    border:1px solid var(--border);border-radius:12px;overflow:hidden}
-  th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
-  th{color:var(--faint);font-size:11px;letter-spacing:.05em;text-transform:uppercase;font-weight:700}
-  tr:last-child td{border-bottom:none}
-  td.wide{white-space:normal;color:var(--muted);font-size:12.5px}
-  .v{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:12px;
-    padding:3px 9px;border-radius:7px;border:1px solid transparent}
+  .del-banner{display:none;margin:6px 0 0;padding:13px 16px;border:1px solid var(--bad);
+    border-radius:12px;background:#2a1113;color:#ffd7d2;font-weight:600}
+  .deleted .del-banner{display:block}
+  .deleted #tiles,.deleted #guardlist,.deleted #ledgerwrap{opacity:.28;filter:grayscale(1)}
+  h3.mini{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin:24px 0 12px;font-weight:700}
+  .guard{display:grid;gap:10px}
+  .gcard{background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:13px 15px;display:flex;gap:12px;align-items:flex-start}
+  .gcard .mk{color:var(--warn);font-size:18px}.gcard .ev{color:var(--faint);font-size:12px;margin-top:3px}
+  table.led{width:100%;border-collapse:collapse;font-size:13px;background:var(--panel2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  table.led th,table.led td{padding:9px 11px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+  table.led th{color:var(--faint);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;font-weight:700}
+  table.led tr:last-child td{border-bottom:none}
+  td.why{white-space:normal;color:var(--muted);font-size:12px;max-width:280px}
+  .v{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:11.5px;padding:3px 9px;border-radius:7px;border:1px solid transparent}
   .v.transact{color:var(--ok);background:rgba(63,185,80,.1);border-color:rgba(63,185,80,.3)}
   .v.caution{color:var(--warn);background:rgba(216,165,49,.1);border-color:rgba(216,165,49,.3)}
   .v.avoid{color:var(--bad);background:rgba(240,86,75,.1);border-color:rgba(240,86,75,.3)}
-  .dot{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block}
-  .oc{font-size:11px;color:var(--base);border:1px solid var(--base-dim);border-radius:6px;padding:1px 6px}
-  .feed{display:grid;gap:6px}
-  .fe{display:flex;gap:10px;align-items:center;font-size:13px;color:var(--muted);
-    padding:7px 12px;background:var(--panel);border:1px solid var(--border);border-radius:9px}
-  .fe .oc-out{font-weight:700;width:74px}
-  .fe .delivered,.fe .late{color:var(--ok)} .fe .partial{color:var(--warn)} .fe .stiffed{color:var(--bad)}
-  footer{margin-top:44px;color:var(--faint);font-size:12.5px;border-top:1px solid var(--border);padding-top:18px}
-  .deleted #tiles,.deleted #guards,.deleted #feed{opacity:.25;filter:grayscale(1)}
-  .del-banner{display:none;margin:22px 0;padding:14px 18px;border:1px solid var(--bad);
-    border-radius:12px;background:#2a1113;color:#ffd7d2;font-weight:600}
-  .deleted .del-banner{display:block}
+  .v .dot{width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block}
+  .oc{font-size:10.5px;color:var(--base);border:1px solid var(--base-dim);border-radius:6px;padding:1px 6px}
+  .btn.armed{background:#2a1113;border-color:var(--bad);color:#ffd7d2}
+
+  /* quickstart */
+  .quick{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--panel2)}
+  .quick pre{margin:0;padding:20px;font-size:13px;line-height:1.75;overflow-x:auto}
+  .cc{color:var(--faint)} /* comment */
+
+  /* partners */
+  .partners{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:760px){.partners{grid-template-columns:1fr}}
+  .partners .card h3{display:flex;align-items:center;gap:8px}
+
+  footer{padding:40px 0 70px;border-top:1px solid var(--border);color:var(--faint);font-size:13px}
+  footer a{color:var(--muted)}
+  .disc{margin-top:16px;font-size:12px;line-height:1.7}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div>
-      <div class="brand"><div class="logo">Prior<b>s</b></div></div>
-      <div class="tag">The buyer agent that turns every outcome into a prior that changes its next decision. Its memory is the product.</div>
-    </div>
-    <div class="meta">
-      <div><span class="pill" id="synthetic">synthetic demo data</span></div>
-      <div style="margin-top:8px">reputation snapshot · <span id="gen">—</span></div>
-      <div style="margin-top:8px"><button class="btn" id="toggle">Delete the memory (demo)</button></div>
-    </div>
-  </header>
 
-  <div class="callout">
-    <b>Delete the memory and this page goes blank.</b> Every verdict below is read from a
-    persistent, file-based memory (Sibyl Memory). Strip that layer out and Priors has no roster,
-    no outcome ledger and no learned guardrails: it treats every counterparty as a stranger and
-    transacts blind. Press <i>Delete the memory</i> to see the collapse.
+<nav><div class="wrap">
+  <div class="logo">Prior<b>s</b></div>
+  <div class="links">
+    <a href="#how">How it works</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#demo">Live demo</a>
+    <a href="#try">Try it</a>
+    <a class="ghost" href="https://github.com/zkasuran/priors" target="_blank" rel="noopener">GitHub ↗</a>
+  </div>
+</div></nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero"><div class="wrap">
+  <div class="badges">
+    <span class="chip"><span class="d"></span> Built on Sibyl Memory</span>
+    <span class="chip"><span class="d" style="background:var(--ok)"></span> Runs on Base</span>
+    <span class="chip"><span class="d" style="background:var(--warn)"></span> Virtuals marketplace buyer</span>
+    <span class="chip"><span class="d" style="background:var(--base-2)"></span> 23 tests passing</span>
   </div>
 
-  <div class="del-banner">Memory deleted. Every counterparty is a stranger again. Priors transacts blind.</div>
+  <h1>The agent that <span class="hl">remembers who delivers</span> — and refuses to be burned twice.</h1>
 
-  <div class="tiles" id="tiles"></div>
+  <p class="lede">Priors is a buyer agent for an AI-agent marketplace. It hires other agents to do jobs,
+  pays them on-chain, and grades the result. Every outcome becomes a <em>prior</em>: a remembered belief
+  that deterministically changes its next hiring decision.</p>
 
-  <div id="guards"><h2>Learned guardrails (reflection over the ledger)</h2><div class="guard" id="guardlist"></div></div>
+  <p class="thesis">Its memory is not a feature bolted onto a chatbot. <b>Its memory is the product.</b></p>
 
-  <h2>Reputation ledger</h2>
-  <div style="overflow-x:auto"><table id="ledger"><thead><tr>
-    <th>Verdict</th><th>Counterparty</th><th>Address (Base Sepolia)</th><th>Jobs</th>
-    <th>Delivered</th><th>Avg score</th><th>Avg price</th><th class="wide">Why</th>
-  </tr></thead><tbody id="rows"></tbody></table></div>
+  <div class="cta">
+    <a class="btn primary" href="#demo">See the memory collapse ▸</a>
+    <a class="btn" href="./dashboard.html">Open live dashboard</a>
+    <a class="btn" href="https://github.com/zkasuran/priors" target="_blank" rel="noopener">Read the code</a>
+  </div>
 
-  <div id="feed"><h2>Recent graded outcomes</h2><div class="feed" id="feedlist"></div></div>
+  <!-- signature terminal -->
+  <div class="term">
+    <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="t">the delete-the-memory test</span></div>
+<pre><span class="prompt">$</span> <span class="cmd">priors demo 0xbad0…0002</span>
 
-  <footer>
-    Built on <a href="https://github.com/Sibyl-Labs/Sibyl-Memory">Sibyl Memory</a> (local-first SQLite + FTS5, MIT).
-    On-chain read priors and EAS attestations run on <b>Base Sepolia</b>. Packaged as a Virtuals-marketplace buyer agent.
-    MIT licensed. Roster shown is synthetic demo data.
-  </footer>
-</div>
+<span class="dim">── fresh session, empty memory ─────────────────────────</span>
+  verdict   <span class="kbadge transact">TRANSACT</span>  confidence 0.20   trust +0.00
+  priors    <span class="dim">none — never dealt with this counterparty</span>
+  because   <span class="dim">Proceeding blind, the way a stateless agent would.</span>
 
-<script src="./data.js" onerror="loadJSON()"></script>
+<span class="dim">── same agent, with its memory ─────────────────────────</span>
+  verdict   <span class="kbadge avoid">AVOID</span>     confidence 0.65   trust <span class="bad">-1.00</span>
+  priors    2 jobs · <span class="bad">0% delivered</span> · avg 0.0/10
+  because   Stiffed us 2 time(s): took the job and did not deliver.
+  instead   <span class="ok">Hire HiRes Studio</span> (100% over 3 jobs)
+
+<span class="prompt">$</span> <span class="cmd">priors forget</span>   <span class="dim"># delete the memory layer</span>
+  every counterparty is a stranger again. Priors transacts blind.</pre>
+  </div>
+</div></header>
+
+<!-- ============ THE GATE / PROBLEM ============ -->
+<section id="why">
+  <div class="wrap">
+    <p class="eyebrow">The eligibility gate</p>
+    <h2>Delete the memory layer, and it stops working.</h2>
+    <p class="sub">The rule that separates a real memory product from a wrapper: strip the memory out, and if it
+    still works, the memory was never doing anything. Priors is built to <em>fail</em> that test loudly — and
+    that collapse is asserted as a passing test in
+    <a href="https://github.com/zkasuran/priors/blob/main/tests/test_gate.py" target="_blank" rel="noopener"><code>tests/test_gate.py</code></a>.</p>
+
+    <div class="split">
+      <div class="card bad-b">
+        <h3>Without memory — a stateless agent</h3>
+        <p>Re-discovers the market every session. Meets a scammer, gets stiffed, forgets, and hires the
+        same scammer again next week. Every counterparty is a stranger. It transacts blind at
+        <span class="mono">confidence&nbsp;0.20</span>.</p>
+      </div>
+      <div class="card good-b">
+        <h3>With memory — Priors</h3>
+        <p>Carries a graded reputation ledger across sessions. The agent that stiffed it twice is now an
+        <span class="mono">AVOID</span>, and the verdict even names a better vendor to hire instead. Sourcing gets
+        cheaper and better with every job.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS / THE LOOP ============ -->
+<section id="how">
+  <div class="wrap">
+    <p class="eyebrow">The loop</p>
+    <h2>Every job outcome feeds the next decision.</h2>
+    <p class="sub">The verdict is computed <b>deterministically from memory</b> — no LLM sits in the decision path,
+    so the same memory always yields the same verdict, and a test can assert exactly how memory changes the call.</p>
+
+    <div class="loop">
+      <div class="step"><h4>Vet</h4><p>A job arrives with a proposed counterparty. Priors reads <span class="k">every prior</span> memory holds: individual history, on-chain state, and any learned category rule.</p></div>
+      <div class="step"><h4>Decide</h4><p>It returns <span class="k">transact / caution / avoid</span> with the exact priors that drove it and suggested terms. If it says avoid, it names who to hire instead.</p></div>
+      <div class="step"><h4>Grade</h4><p>The job runs and Priors grades it: <span class="k">delivered, late, partial, or stiffed</span>, with a score and the price paid.</p></div>
+      <div class="step"><h4>Record</h4><p>The graded outcome is written to an <span class="k">append-only ledger</span> and folded into the counterparty's card, so the record compounds across sessions.</p></div>
+      <div class="step"><h4>Attest</h4><p>On Base, the outcome is <span class="k">attested via EAS</span>, turning a private reputation record into a public, verifiable on-chain trail.</p></div>
+      <div class="step"><h4>Reflect</h4><p>When a pattern crosses a threshold, reflection writes a <span class="k">category guardrail</span>. Next session that guardrail changes who Priors hires.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TWO MECHANISMS ============ -->
+<section id="mechanisms">
+  <div class="wrap">
+    <p class="eyebrow">Where memory is load-bearing</p>
+    <h2>Two independent ways memory changes the call.</h2>
+    <p class="sub">Both vanish the instant the store is deleted. That is what makes memory the product and not decoration.</p>
+
+    <div class="mech">
+      <div class="card">
+        <h3>1 · Individual history</h3>
+        <p class="muted">The counterparty book plus the append-only outcome ledger. A recency-weighted trust score in
+        <span class="mono">[-1, +1]</span> rolls up delivery rate, average score, and stiffs.</p>
+        <ul>
+          <li>Two rug-pulls flip a cold <span class="mono">transact</span> into <span class="mono">avoid</span>.</li>
+          <li>The verdict names a better vendor from the roster.</li>
+          <li>A proven track record beats any generic category rule.</li>
+        </ul>
+        <div class="flip">PixelBot &nbsp;→&nbsp; <span class="bad">AVOID · trust -1.00</span> &nbsp;·&nbsp; instead: HiRes Studio</div>
+      </div>
+      <div class="card">
+        <h3>2 · A learned guardrail</h3>
+        <p class="muted">Reflection over the ledger detects cross-counterparty patterns and writes them back as
+        category priors — rules that fire even for a counterparty Priors has <em>never met</em>.</p>
+        <ul>
+          <li>"Image offers ≤ 1.0 miss the brief 100% of the time (vs 10% above)."</li>
+          <li>An unknown vendor at that cheap tier is flipped to <span class="mono">caution</span>.</li>
+          <li>Suggested terms: escrow, cap the price, request a sample first.</li>
+        </ul>
+        <div class="flip">unknown @ price 0.5 &nbsp;→&nbsp; <span class="warn">CAUTION · conf 0.55</span> &nbsp;·&nbsp; 2 priors fired</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ARCHITECTURE ============ -->
+<section id="architecture">
+  <div class="wrap">
+    <p class="eyebrow">Architecture</p>
+    <h2>Four stores on Sibyl Memory's tiers.</h2>
+    <p class="sub">A thin domain wrapper (<code>priors/memory.py</code>) maps Priors' concepts onto Sibyl Memory — a
+    local-first SQLite&nbsp;+&nbsp;FTS5 store — so the engine and the learner never touch Sibyl directly.</p>
+
+    <table class="tbl">
+      <thead><tr><th>Store</th><th>What it holds</th><th>Sibyl tier</th></tr></thead>
+      <tbody>
+        <tr><td><b>Counterparty book</b></td><td>one card per counterparty: record, scores, prices, categories</td><td><span class="tier">WARM · entities</span></td></tr>
+        <tr><td><b>Outcome ledger</b></td><td>every graded job, append-only, time-ordered</td><td><span class="tier">COLD · journal</span></td></tr>
+        <tr><td><b>Learned guardrails</b></td><td>category-level rules synthesized from the ledger</td><td><span class="tier">WARM · entities</span></td></tr>
+        <tr><td><b>Vetting policy</b></td><td>the thresholds the engine starts from</td><td><span class="tier">REFERENCE</span></td></tr>
+        <tr><td><b>Working focus</b></td><td>the agent's current task and last snapshot</td><td><span class="tier">HOT · state</span></td></tr>
+      </tbody>
+    </table>
+
+    <div class="flow"><pre>  cli.py ──▶ engine.vet()  ──── reads ────▶  memory.Memory ──▶ Sibyl (SQLite + FTS5)
+    │                                              ▲
+    ├─▶ learn.record_outcome()  ── writes ────────┘   append-only journal + roster card
+    ├─▶ learn.synthesize_guardrails()  ── reflects over the ledger, writes guardrails
+    ├─▶ onchain.cache_onchain_prior()  ── reads Base Sepolia, folds into the card
+    ├─▶ onchain.attest_outcome()       ── writes an EAS attestation on Base
+    └─▶ rationale.explain()            ── phrases a verdict (never mutates it)</pre></div>
+  </div>
+</section>
+
+<!-- ============ LIVE DEMO ============ -->
+<section id="demo">
+  <div class="wrap">
+    <p class="eyebrow">Live · interactive</p>
+    <h2>Watch the memory collapse in real time.</h2>
+    <p class="sub">This is a real reputation snapshot from a seeded, <b>synthetic</b> demo roster. Press
+    <i>Delete the memory</i> and every verdict flips to blind <span class="mono">TRANSACT</span>, the stats blank
+    out, and the guardrails grey away — exactly what the eligibility-gate test asserts.</p>
+
+    <div class="demo">
+      <div class="hd">
+        <div class="muted">reputation snapshot · <span id="gen">—</span> &nbsp;<span class="oc" id="synthetic">synthetic demo data</span></div>
+        <button class="btn" id="toggle">Delete the memory (demo)</button>
+      </div>
+
+      <div class="del-banner">Memory deleted. Every counterparty is a stranger again. Priors transacts blind.</div>
+
+      <div class="tiles" id="tiles"></div>
+
+      <h3 class="mini">Learned guardrails · reflection over the ledger</h3>
+      <div class="guard" id="guardlist"></div>
+
+      <h3 class="mini">Reputation ledger</h3>
+      <div id="ledgerwrap" style="overflow-x:auto">
+        <table class="led"><thead><tr>
+          <th>Verdict</th><th>Counterparty</th><th>Address</th><th>Jobs</th><th>Del.</th><th>Score</th><th>Price</th><th class="why">Why</th>
+        </tr></thead><tbody id="rows"></tbody></table>
+      </div>
+
+      <div style="margin-top:16px"><a class="btn" href="./dashboard.html">Open the full dashboard →</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TRY IT ============ -->
+<section id="try">
+  <div class="wrap">
+    <p class="eyebrow">Try it locally</p>
+    <h2>Five commands to reproduce everything above.</h2>
+    <p class="sub">Python 3.10+. The core runs fully offline; the only network calls are the optional Base Sepolia
+    reads and attestations, and they degrade gracefully.</p>
+
+    <div class="quick"><pre><span class="cc"># install (Python 3.10+)</span>
+pip install -e .
+
+<span class="cc"># load the disclosed, synthetic demo roster</span>
+priors seed --reset
+
+<span class="cc"># the remembered counterparties and their verdicts</span>
+priors roster
+
+<span class="cc"># PixelBot stiffed us twice → AVOID, and it names who to hire instead</span>
+priors vet 0xbad0000000000000000000000000000000000002
+
+<span class="cc"># never met, cheap offer → CAUTION from a learned category prior</span>
+priors vet 0x00000000000000000000000000000000deadbeef --price 0.5
+
+<span class="cc"># read a counterparty's live Base Sepolia state as a prior (no gas)</span>
+priors vet 0x4200000000000000000000000000000000000021 --onchain
+
+<span class="cc"># the eligibility gate, by hand:</span>
+priors demo 0xbad0000000000000000000000000000000000002
+priors forget    <span class="cc"># delete the memory → back to blind TRANSACT</span></pre></div>
+  </div>
+</section>
+
+<!-- ============ PARTNERS ============ -->
+<section id="partners">
+  <div class="wrap">
+    <p class="eyebrow">Partner stacks</p>
+    <h2>Every integration serves the product's actual function.</h2>
+    <div class="partners">
+      <div class="card">
+        <h3>⛓️ Base</h3>
+        <p class="muted"><b style="color:var(--ink)">Read prior (live, no gas).</b> <code>onchain_profile</code>
+        reads a counterparty's balance, transaction count, and contract-or-EOA on Base Sepolia. A brand-new address
+        with no on-chain footprint becomes a caution prior, folded straight into the verdict.</p>
+        <p class="muted" style="margin-top:12px"><b style="color:var(--ink)">Attestation (EAS).</b>
+        <code>attest_outcome</code> writes a graded outcome to the Ethereum Attestation Service on Base
+        (<span class="mono">0x42…0021</span>, verified live via <code>getSchemaRegistry()</code>). No funded key?
+        It returns a fully prepared, unsent attestation plus the exact funding step — a one-command finish, never a dead end.</p>
+      </div>
+      <div class="card">
+        <h3>🛒 Virtuals</h3>
+        <p class="muted">Priors is a marketplace <b style="color:var(--ink)">buyer</b>: its whole job is choosing which
+        seller agent to hire for a subtask, from a remembered, graded roster. A stateless buyer re-discovers the market
+        every session; ours accumulates a reputation ledger, so sourcing gets cheaper and better with use. The memory is
+        what makes the buyer smart.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer><div class="wrap">
+  <div>Built on <a href="https://github.com/Sibyl-Labs/Sibyl-Memory" target="_blank" rel="noopener">Sibyl Memory</a>
+  (local-first SQLite&nbsp;+&nbsp;FTS5, MIT). On-chain read priors and EAS attestations run on <b>Base Sepolia</b>.
+  Packaged as a Virtuals-marketplace buyer agent. MIT licensed.</div>
+  <div class="disc muted">
+    <b>Disclosure.</b> The roster shown here is synthetic demo data, labeled as such everywhere it appears.
+    Sibyl Memory is third-party software by Sibyl Labs, used under its MIT license and not modified.
+    AI assistance (Claude, Anthropic) was used in development; design, review, and verification were done by the author.
+  </div>
+</div></footer>
+
+<!-- Inline snapshot fallback so the page renders when opened as a plain file (file://),
+     where browsers refuse to load ./data.js as an external script and fetch() is blocked.
+     When served over HTTP, ./data.js loads first and overrides this with the latest
+     `priors snapshot` output. Regenerate both with: priors snapshot -->
+<script id="fallback-data">
+window.PRIORS_FALLBACK = {"product":"Priors","generated_at":"2026-09-10T03:48:06.516875Z","synthetic":true,"stats":{"counterparties":11,"guardrails":2,"outcomes":20},"roster":[{"label":"MemeMaster","address":"0xa11ce00000000000000000000000000000000001","categories":["image"],"verdict":"transact","confidence":0.95,"trust":0.839,"jobs":4,"delivery_rate":1.0,"avg_score":8.99,"avg_price":2.0,"last_outcome":"delivered","onchain":null,"reason":"Reliable: 100% delivery, average score 8.99/10 over 4 graded jobs."},{"label":"HiRes Studio","address":"0xf00d000000000000000000000000000000000004","categories":["image"],"verdict":"transact","confidence":0.8,"trust":0.86,"jobs":3,"delivery_rate":1.0,"avg_score":9.33,"avg_price":5.0,"last_outcome":"delivered","onchain":null,"reason":"Reliable: 100% delivery, average score 9.33/10 over 3 graded jobs."},{"label":"CopyCrafter","address":"0x0000000000000000000000000000000000000c01","categories":["copy"],"verdict":"transact","confidence":0.65,"trust":0.811,"jobs":2,"delivery_rate":1.0,"avg_score":8.51,"avg_price":1.0,"last_outcome":"delivered","onchain":null,"reason":"Reliable: 100% delivery, average score 8.51/10 over 2 graded jobs."},{"label":"QuickArt","address":"0xc0ffee0000000000000000000000000000000003","categories":["image"],"verdict":"caution","confidence":0.8,"trust":0.388,"jobs":3,"delivery_rate":0.833,"avg_score":5.64,"avg_price":2.5,"last_outcome":"partial","onchain":null,"reason":"Mixed record: 83% delivery, average score 5.64/10 over 3 jobs."},{"label":"BargainBot","address":"0x0000000000000000000000000000000000000ba6","categories":["image"],"verdict":"caution","confidence":0.5,"trust":-0.18,"jobs":1,"delivery_rate":0.5,"avg_score":2.0,"avg_price":0.7,"last_outcome":"partial","onchain":null,"reason":"Mixed record: 50% delivery, average score 2.0/10 over 1 jobs."},{"label":"PennyArt","address":"0x0000000000000000000000000000000000000ba4","categories":["image"],"verdict":"caution","confidence":0.5,"trust":0.54,"jobs":1,"delivery_rate":1.0,"avg_score":4.0,"avg_price":0.5,"last_outcome":"delivered","onchain":null,"reason":"Mixed record: 100% delivery, average score 4.0/10 over 1 jobs."},{"label":"CheapFrames","address":"0x0000000000000000000000000000000000000ba2","categories":["image"],"verdict":"caution","confidence":0.5,"trust":-0.12,"jobs":1,"delivery_rate":0.5,"avg_score":3.0,"avg_price":0.5,"last_outcome":"partial","onchain":null,"reason":"Mixed record: 50% delivery, average score 3.0/10 over 1 jobs."},{"label":"PixelBot","address":"0xbad0000000000000000000000000000000000002","categories":["image"],"verdict":"avoid","confidence":0.65,"trust":-1.0,"jobs":2,"delivery_rate":0.0,"avg_score":0.0,"avg_price":1.0,"last_outcome":"stiffed","onchain":null,"reason":"Stiffed us 2 time(s): took the job and did not deliver. Policy avoids at 2."},{"label":"LowRes","address":"0x0000000000000000000000000000000000000ba5","categories":["image"],"verdict":"avoid","confidence":0.5,"trust":-1.0,"jobs":1,"delivery_rate":0.0,"avg_score":0.0,"avg_price":0.6,"last_outcome":"stiffed","onchain":null,"reason":"Delivered only 0% of 1 graded jobs."},{"label":"QuickCheap","address":"0x0000000000000000000000000000000000000ba3","categories":["image"],"verdict":"avoid","confidence":0.5,"trust":-1.0,"jobs":1,"delivery_rate":0.0,"avg_score":0.0,"avg_price":0.6,"last_outcome":"stiffed","onchain":null,"reason":"Delivered only 0% of 1 graded jobs."},{"label":"BudgetPix","address":"0x0000000000000000000000000000000000000ba1","categories":["image"],"verdict":"avoid","confidence":0.5,"trust":-1.0,"jobs":1,"delivery_rate":0.0,"avg_score":0.0,"avg_price":0.5,"last_outcome":"stiffed","onchain":null,"reason":"Delivered only 0% of 1 graded jobs."}],"guardrails":[{"slug":"no-track-record","svc_category":"image","kind":"require_history","text":"image counterparties with no graded history failed the first job 70% of the time (n=10). Treat a fresh counterparty here with caution.","params":{"min_jobs":1},"evidence":{"n":10,"fail_rate":0.7},"learned_ts":"2026-09-10T03:48:06.100721Z"},{"slug":"cheap-miss","svc_category":"image","kind":"cap_price_below_quality","text":"image offers at or below 1.0 miss the brief 100% of the time (vs 10% above). Prefer the higher tier or require a sample first.","params":{"min_price":1.0},"evidence":{"n":8,"fail_rate":1.0,"compare_fail_rate":0.1},"learned_ts":"2026-09-10T03:48:06.098368Z"}],"recent_outcomes":[{"address":"0xf00d000000000000000000000000000000000004","svc_category":"image","outcome":"delivered","score":9,"price":5.0,"task":"cover art","ts":"2026-09-09T03:48:05.929252Z"},{"address":"0xa11ce00000000000000000000000000000000001","svc_category":"image","outcome":"delivered","score":9,"price":2.0,"task":"reaction pack","ts":"2026-09-09T03:48:05.929252Z"},{"address":"0x0000000000000000000000000000000000000ba6","svc_category":"image","outcome":"partial","score":2,"price":0.7,"task":"icon","ts":"2026-09-08T03:48:05.929252Z"},{"address":"0xc0ffee0000000000000000000000000000000003","svc_category":"image","outcome":"partial","score":4,"price":2.5,"task":"icon sheet","ts":"2026-09-08T03:48:05.929252Z"},{"address":"0x0000000000000000000000000000000000000c01","svc_category":"copy","outcome":"delivered","score":9,"price":1.0,"task":"product blurb","ts":"2026-09-08T03:48:05.929252Z"},{"address":"0xa11ce00000000000000000000000000000000001","svc_category":"image","outcome":"delivered","score":8,"price":2.0,"task":"banner variations","ts":"2026-09-07T03:48:05.929252Z"},{"address":"0x0000000000000000000000000000000000000ba5","svc_category":"image","outcome":"stiffed","score":0,"price":0.6,"task":"logo","ts":"2026-09-07T03:48:05.929252Z"},{"address":"0xf00d000000000000000000000000000000000004","svc_category":"image","outcome":"delivered","score":10,"price":5.0,"task":"print poster","ts":"2026-09-07T03:48:05.929252Z"},{"address":"0x0000000000000000000000000000000000000ba4","svc_category":"image","outcome":"delivered","score":4,"price":0.5,"task":"banner","ts":"2026-09-06T03:48:05.929252Z"},{"address":"0xc0ffee0000000000000000000000000000000003","svc_category":"image","outcome":"late","score":6,"price":2.5,"task":"carousel set","ts":"2026-09-06T03:48:05.929252Z"},{"address":"0xbad0000000000000000000000000000000000002","svc_category":"image","outcome":"stiffed","score":0,"price":1.0,"task":"retry logo","ts":"2026-09-06T03:48:05.929252Z"},{"address":"0x0000000000000000000000000000000000000ba3","svc_category":"image","outcome":"stiffed","score":0,"price":0.6,"task":"avatar","ts":"2026-09-05T03:48:05.929252Z"},{"address":"0xf00d000000000000000000000000000000000004","svc_category":"image","outcome":"delivered","score":9,"price":5.0,"task":"hero illustration","ts":"2026-09-05T03:48:05.929252Z"},{"address":"0x0000000000000000000000000000000000000c01","svc_category":"copy","outcome":"delivered","score":8,"price":1.0,"task":"tagline","ts":"2026-09-05T03:48:05.929252Z"},{"address":"0xa11ce00000000000000000000000000000000001","svc_category":"image","outcome":"delivered","score":10,"price":2.0,"task":"mascot sticker set","ts":"2026-09-04T03:48:05.929252Z"}]};
+</script>
+<script src="./data.js" onerror="void 0"></script>
 <script>
 const EXPLORER = "https://sepolia.basescan.org/address/";
-function loadJSON(){ fetch("./data.json").then(r=>r.json()).then(d=>{window.PRIORS_DATA=d;render();}).catch(()=>{}); }
+// Prefer live snapshot (data.js over HTTP); fall back to the inlined snapshot for file://.
+if(!window.PRIORS_DATA && window.PRIORS_FALLBACK){ window.PRIORS_DATA = window.PRIORS_FALLBACK; }
 function short(a){ return a && a.length>12 ? a.slice(0,6)+"…"+a.slice(-4) : (a||""); }
 function pct(x){ return x==null?"—":Math.round(x*100)+"%"; }
 let deleted=false;
 
 function render(){
   const d = window.PRIORS_DATA; if(!d) return;
-  document.getElementById("gen").textContent = (d.generated_at||"").replace("T"," ").replace("Z"," UTC");
-  document.getElementById("synthetic").style.display = d.synthetic ? "" : "none";
+  const gen = document.getElementById("gen");
+  if(gen) gen.textContent = (d.generated_at||"").replace("T"," ").replace("Z"," UTC");
+  const syn = document.getElementById("synthetic");
+  if(syn) syn.style.display = d.synthetic ? "" : "none";
+
   const counts = {transact:0,caution:0,avoid:0};
   (d.roster||[]).forEach(r=>counts[r.verdict]++);
   const tiles = deleted
@@ -150,14 +489,8 @@ function render(){
       <td>${deleted?"—":pct(r.delivery_rate)}</td>
       <td>${deleted?"—":(r.avg_score==null?"—":r.avg_score+"/10")}</td>
       <td>${deleted?"—":(r.avg_price==null?"—":r.avg_price)}</td>
-      <td class="wide">${deleted?"No memory: no priors to reason from.":r.reason}</td>
+      <td class="why">${deleted?"No memory: no priors to reason from.":r.reason}</td>
     </tr>`;}).join("");
-
-  document.getElementById("feedlist").innerHTML = (d.recent_outcomes||[]).slice(0,14).map(o=>
-    `<div class="fe"><span class="oc-out ${o.outcome}">${o.outcome}</span>
-     <span>${short(o.address)}</span>
-     <span style="color:var(--faint)">${o.svc_category||""} · ${o.score==null?"":o.score+"/10"} · ${o.price==null?"":o.price} · ${(o.ts||"").slice(0,10)}</span>
-     <span style="flex:1"></span><span style="color:var(--faint)">${o.task||""}</span></div>`).join("");
 }
 
 document.getElementById("toggle").addEventListener("click", ()=>{
