@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Priors — the agent that remembers who delivers</title>
+<title>Priors, the agent that remembers who delivers</title>
 <meta name="description" content="Priors is a buyer agent that turns every job outcome into a verifiable prior that changes its next decision. Its memory is the product. Delete the memory and it transacts blind." />
-<meta property="og:title" content="Priors — memory is the product" />
-<meta property="og:description" content="A buyer agent whose every decision is read deterministically from memory. Delete the memory layer and it collapses to blind, stateless behavior — asserted as a passing test." />
+<meta property="og:title" content="Priors, memory is the product" />
+<meta property="og:description" content="A buyer agent whose every decision is read deterministically from memory. Delete the memory layer and it collapses to blind, stateless behavior, asserted as a passing test." />
 <meta property="og:type" content="website" />
 <style>
   :root{
@@ -191,10 +191,10 @@
     <span class="chip"><span class="d" style="background:var(--base-2)"></span> 23 tests passing</span>
   </div>
 
-  <h1>The agent that <span class="hl">remembers who delivers</span> — and refuses to be burned twice.</h1>
+  <h1>The agent that <span class="hl">remembers who delivers</span> and refuses to be burned twice.</h1>
 
   <p class="lede">Priors is a buyer agent for an AI-agent marketplace. It hires other agents to do jobs,
-  pays them on-chain, and grades the result. Every outcome becomes a <em>prior</em>: a remembered belief
+  pays them on-chain and grades the result. Every outcome becomes a <em>prior</em>: a remembered belief
   that deterministically changes its next hiring decision.</p>
 
   <p class="thesis">Its memory is not a feature bolted onto a chatbot. <b>Its memory is the product.</b></p>
@@ -213,7 +213,7 @@
 
 <span class="dim">── fresh session, empty memory ─────────────────────────</span>
   verdict   <span class="kbadge transact">TRANSACT</span>  confidence 0.20   trust +0.00
-  priors    <span class="dim">none — never dealt with this counterparty</span>
+  priors    <span class="dim">none, never dealt with this counterparty</span>
   because   <span class="dim">Proceeding blind, the way a stateless agent would.</span>
 
 <span class="dim">── same agent, with its memory ─────────────────────────</span>
@@ -231,23 +231,23 @@
 <section id="why">
   <div class="wrap">
     <p class="eyebrow">The eligibility gate</p>
-    <h2>Delete the memory layer, and it stops working.</h2>
-    <p class="sub">The rule that separates a real memory product from a wrapper: strip the memory out, and if it
-    still works, the memory was never doing anything. Priors is built to <em>fail</em> that test loudly — and
+    <h2>Delete the memory layer and it stops working.</h2>
+    <p class="sub">The rule that separates a real memory product from a wrapper: strip the memory out and if it
+    still works, the memory was never doing anything. Priors is built to <em>fail</em> that test loudly, and
     that collapse is asserted as a passing test in
     <a href="https://github.com/zkasuran/priors/blob/main/tests/test_gate.py" target="_blank" rel="noopener"><code>tests/test_gate.py</code></a>.</p>
 
     <div class="split">
       <div class="card bad-b">
-        <h3>Without memory — a stateless agent</h3>
-        <p>Re-discovers the market every session. Meets a scammer, gets stiffed, forgets, and hires the
+        <h3>Without memory, a stateless agent</h3>
+        <p>Re-discovers the market every session. Meets a scammer, gets stiffed, forgets and hires the
         same scammer again next week. Every counterparty is a stranger. It transacts blind at
         <span class="mono">confidence&nbsp;0.20</span>.</p>
       </div>
       <div class="card good-b">
-        <h3>With memory — Priors</h3>
+        <h3>With memory, Priors</h3>
         <p>Carries a graded reputation ledger across sessions. The agent that stiffed it twice is now an
-        <span class="mono">AVOID</span>, and the verdict even names a better vendor to hire instead. Sourcing gets
+        <span class="mono">AVOID</span> and the verdict even names a better vendor to hire instead. Sourcing gets
         cheaper and better with every job.</p>
       </div>
     </div>
@@ -259,13 +259,13 @@
   <div class="wrap">
     <p class="eyebrow">The loop</p>
     <h2>Every job outcome feeds the next decision.</h2>
-    <p class="sub">The verdict is computed <b>deterministically from memory</b> — no LLM sits in the decision path,
-    so the same memory always yields the same verdict, and a test can assert exactly how memory changes the call.</p>
+    <p class="sub">The verdict is computed <b>deterministically from memory</b>, no LLM sits in the decision path,
+    so the same memory always yields the same verdict and a test can assert exactly how memory changes the call.</p>
 
     <div class="loop">
-      <div class="step"><h4>Vet</h4><p>A job arrives with a proposed counterparty. Priors reads <span class="k">every prior</span> memory holds: individual history, on-chain state, and any learned category rule.</p></div>
+      <div class="step"><h4>Vet</h4><p>A job arrives with a proposed counterparty. Priors reads <span class="k">every prior</span> memory holds: individual history, on-chain state and any learned category rule.</p></div>
       <div class="step"><h4>Decide</h4><p>It returns <span class="k">transact / caution / avoid</span> with the exact priors that drove it and suggested terms. If it says avoid, it names who to hire instead.</p></div>
-      <div class="step"><h4>Grade</h4><p>The job runs and Priors grades it: <span class="k">delivered, late, partial, or stiffed</span>, with a score and the price paid.</p></div>
+      <div class="step"><h4>Grade</h4><p>The job runs and Priors grades it: <span class="k">delivered, late, partial or stiffed</span>, with a score and the price paid.</p></div>
       <div class="step"><h4>Record</h4><p>The graded outcome is written to an <span class="k">append-only ledger</span> and folded into the counterparty's card, so the record compounds across sessions.</p></div>
       <div class="step"><h4>Attest</h4><p>On Base, the outcome is <span class="k">attested via EAS</span>, turning a private reputation record into a public, verifiable on-chain trail.</p></div>
       <div class="step"><h4>Reflect</h4><p>When a pattern crosses a threshold, reflection writes a <span class="k">category guardrail</span>. Next session that guardrail changes who Priors hires.</p></div>
@@ -284,7 +284,7 @@
       <div class="card">
         <h3>1 · Individual history</h3>
         <p class="muted">The counterparty book plus the append-only outcome ledger. A recency-weighted trust score in
-        <span class="mono">[-1, +1]</span> rolls up delivery rate, average score, and stiffs.</p>
+        <span class="mono">[-1, +1]</span> rolls up delivery rate, average score and stiffs.</p>
         <ul>
           <li>Two rug-pulls flip a cold <span class="mono">transact</span> into <span class="mono">avoid</span>.</li>
           <li>The verdict names a better vendor from the roster.</li>
@@ -295,7 +295,7 @@
       <div class="card">
         <h3>2 · A learned guardrail</h3>
         <p class="muted">Reflection over the ledger detects cross-counterparty patterns and writes them back as
-        category priors — rules that fire even for a counterparty Priors has <em>never met</em>.</p>
+        category priors, rules that fire even for a counterparty Priors has <em>never met</em>.</p>
         <ul>
           <li>"Image offers ≤ 1.0 miss the brief 100% of the time (vs 10% above)."</li>
           <li>An unknown vendor at that cheap tier is flipped to <span class="mono">caution</span>.</li>
@@ -312,8 +312,8 @@
   <div class="wrap">
     <p class="eyebrow">Architecture</p>
     <h2>Four stores on Sibyl Memory's tiers.</h2>
-    <p class="sub">A thin domain wrapper (<code>priors/memory.py</code>) maps Priors' concepts onto Sibyl Memory — a
-    local-first SQLite&nbsp;+&nbsp;FTS5 store — so the engine and the learner never touch Sibyl directly.</p>
+    <p class="sub">A thin domain wrapper (<code>priors/memory.py</code>) maps Priors' concepts onto Sibyl Memory, a
+    local-first SQLite&nbsp;+&nbsp;FTS5 store, so the engine and the learner never touch Sibyl directly.</p>
 
     <table class="tbl">
       <thead><tr><th>Store</th><th>What it holds</th><th>Sibyl tier</th></tr></thead>
@@ -343,11 +343,11 @@
     <h2>Watch the memory collapse in real time.</h2>
     <p class="sub">This is a real reputation snapshot from a seeded, <b>synthetic</b> demo roster. Press
     <i>Delete the memory</i> and every verdict flips to blind <span class="mono">TRANSACT</span>, the stats blank
-    out, and the guardrails grey away — exactly what the eligibility-gate test asserts.</p>
+    out and the guardrails grey away, exactly what the eligibility-gate test asserts.</p>
 
     <div class="demo">
       <div class="hd">
-        <div class="muted">reputation snapshot · <span id="gen">—</span> &nbsp;<span class="oc" id="synthetic">synthetic demo data</span></div>
+        <div class="muted">reputation snapshot · <span id="gen">·</span> &nbsp;<span class="oc" id="synthetic">synthetic demo data</span></div>
         <button class="btn" id="toggle">Delete the memory (demo)</button>
       </div>
 
@@ -376,7 +376,7 @@
     <p class="eyebrow">Try it locally</p>
     <h2>Five commands to reproduce everything above.</h2>
     <p class="sub">Python 3.10+. The core runs fully offline; the only network calls are the optional Base Sepolia
-    reads and attestations, and they degrade gracefully.</p>
+    reads and attestations and they degrade gracefully.</p>
 
     <div class="quick"><pre><span class="cc"># install (Python 3.10+)</span>
 pip install -e .
@@ -387,7 +387,7 @@ priors seed --reset
 <span class="cc"># the remembered counterparties and their verdicts</span>
 priors roster
 
-<span class="cc"># PixelBot stiffed us twice → AVOID, and it names who to hire instead</span>
+<span class="cc"># PixelBot stiffed us twice → AVOID and it names who to hire instead</span>
 priors vet 0xbad0000000000000000000000000000000000002
 
 <span class="cc"># never met, cheap offer → CAUTION from a learned category prior</span>
@@ -411,12 +411,12 @@ priors forget    <span class="cc"># delete the memory → back to blind TRANSACT
       <div class="card">
         <h3>⛓️ Base</h3>
         <p class="muted"><b style="color:var(--ink)">Read prior (live, no gas).</b> <code>onchain_profile</code>
-        reads a counterparty's balance, transaction count, and contract-or-EOA on Base Sepolia. A brand-new address
+        reads a counterparty's balance, transaction count and contract-or-EOA on Base Sepolia. A brand-new address
         with no on-chain footprint becomes a caution prior, folded straight into the verdict.</p>
         <p class="muted" style="margin-top:12px"><b style="color:var(--ink)">Attestation (EAS).</b>
         <code>attest_outcome</code> writes a graded outcome to the Ethereum Attestation Service on Base
         (<span class="mono">0x42…0021</span>, verified live via <code>getSchemaRegistry()</code>). No funded key?
-        It returns a fully prepared, unsent attestation plus the exact funding step — a one-command finish, never a dead end.</p>
+        It returns a fully prepared, unsent attestation plus the exact funding step, a one-command finish, never a dead end.</p>
       </div>
       <div class="card">
         <h3>🛒 Virtuals</h3>
@@ -436,7 +436,7 @@ priors forget    <span class="cc"># delete the memory → back to blind TRANSACT
   <div class="disc muted">
     <b>Disclosure.</b> The roster shown here is synthetic demo data, labeled as such everywhere it appears.
     Sibyl Memory is third-party software by Sibyl Labs, used under its MIT license and not modified.
-    AI assistance (Claude, Anthropic) was used in development; design, review, and verification were done by the author.
+    AI assistance (Claude, Anthropic) was used in development; design, review and verification were done by the author.
   </div>
 </div></footer>
 
@@ -453,7 +453,7 @@ const EXPLORER = "https://sepolia.basescan.org/address/";
 // Prefer live snapshot (data.js over HTTP); fall back to the inlined snapshot for file://.
 if(!window.PRIORS_DATA && window.PRIORS_FALLBACK){ window.PRIORS_DATA = window.PRIORS_FALLBACK; }
 function short(a){ return a && a.length>12 ? a.slice(0,6)+"…"+a.slice(-4) : (a||""); }
-function pct(x){ return x==null?"—":Math.round(x*100)+"%"; }
+function pct(x){ return x==null?"·":Math.round(x*100)+"%"; }
 let deleted=false;
 
 function render(){
@@ -466,7 +466,7 @@ function render(){
   const counts = {transact:0,caution:0,avoid:0};
   (d.roster||[]).forEach(r=>counts[r.verdict]++);
   const tiles = deleted
-    ? [["—","counterparties"],["—","graded outcomes"],["0","guardrails"],["all","transact · blind"]]
+    ? [["·","counterparties"],["·","graded outcomes"],["0","guardrails"],["all","transact · blind"]]
     : [[d.stats.counterparties,"counterparties"],[d.stats.outcomes,"graded outcomes"],
        [d.stats.guardrails,"learned guardrails"],
        [counts.avoid+" / "+counts.caution+" / "+counts.transact,"avoid / caution / transact"]];
@@ -485,10 +485,10 @@ function render(){
       <td><span class="v ${v}"><span class="dot"></span>${vlabel}</span></td>
       <td>${r.label||"?"}</td>
       <td><a class="mono" href="${EXPLORER}${r.address}" target="_blank" rel="noopener">${short(r.address)}</a>${oc}</td>
-      <td>${deleted?"—":r.jobs}</td>
-      <td>${deleted?"—":pct(r.delivery_rate)}</td>
-      <td>${deleted?"—":(r.avg_score==null?"—":r.avg_score+"/10")}</td>
-      <td>${deleted?"—":(r.avg_price==null?"—":r.avg_price)}</td>
+      <td>${deleted?"·":r.jobs}</td>
+      <td>${deleted?"·":pct(r.delivery_rate)}</td>
+      <td>${deleted?"·":(r.avg_score==null?"·":r.avg_score+"/10")}</td>
+      <td>${deleted?"·":(r.avg_price==null?"·":r.avg_price)}</td>
       <td class="why">${deleted?"No memory: no priors to reason from.":r.reason}</td>
     </tr>`;}).join("");
 }

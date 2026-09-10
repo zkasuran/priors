@@ -55,7 +55,7 @@ def render_verdict(v: Verdict, explain: bool = False) -> str:
             line += f" · avg {agg['avg_price']}"
         out.append(f"  priors    {line}")
     elif v.cold_start:
-        out.append(f"  priors    {_c('none — never dealt with this counterparty', '2')}")
+        out.append(f"  priors    {_c('none, never dealt with this counterparty', '2')}")
     oc = v.priors_used.get("onchain")
     if oc:
         out.append(f"  on-chain  Base Sepolia · {oc.get('tx_count')} txs · "

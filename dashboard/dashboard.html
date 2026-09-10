@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Priors — the agent that remembers who delivers</title>
+<title>Priors, the agent that remembers who delivers</title>
 <style>
   :root{
     --bg:#0b0e13; --panel:#141922; --panel2:#0f141c; --border:#232c3a;
@@ -79,7 +79,7 @@
     </div>
     <div class="meta">
       <div><a href="./index.html">← overview</a> &nbsp; <span class="pill" id="synthetic">synthetic demo data</span></div>
-      <div style="margin-top:8px">reputation snapshot · <span id="gen">—</span></div>
+      <div style="margin-top:8px">reputation snapshot · <span id="gen">·</span></div>
       <div style="margin-top:8px"><button class="btn" id="toggle">Delete the memory (demo)</button></div>
     </div>
   </header>
@@ -117,7 +117,7 @@
 const EXPLORER = "https://sepolia.basescan.org/address/";
 function loadJSON(){ fetch("./data.json").then(r=>r.json()).then(d=>{window.PRIORS_DATA=d;render();}).catch(()=>{}); }
 function short(a){ return a && a.length>12 ? a.slice(0,6)+"…"+a.slice(-4) : (a||""); }
-function pct(x){ return x==null?"—":Math.round(x*100)+"%"; }
+function pct(x){ return x==null?"·":Math.round(x*100)+"%"; }
 let deleted=false;
 
 function render(){
@@ -127,7 +127,7 @@ function render(){
   const counts = {transact:0,caution:0,avoid:0};
   (d.roster||[]).forEach(r=>counts[r.verdict]++);
   const tiles = deleted
-    ? [["—","counterparties"],["—","graded outcomes"],["0","guardrails"],["all","transact · blind"]]
+    ? [["·","counterparties"],["·","graded outcomes"],["0","guardrails"],["all","transact · blind"]]
     : [[d.stats.counterparties,"counterparties"],[d.stats.outcomes,"graded outcomes"],
        [d.stats.guardrails,"learned guardrails"],
        [counts.avoid+" / "+counts.caution+" / "+counts.transact,"avoid / caution / transact"]];
@@ -146,10 +146,10 @@ function render(){
       <td><span class="v ${v}"><span class="dot"></span>${vlabel}</span></td>
       <td>${r.label||"?"}</td>
       <td><a class="mono" href="${EXPLORER}${r.address}" target="_blank" rel="noopener">${short(r.address)}</a>${oc}</td>
-      <td>${deleted?"—":r.jobs}</td>
-      <td>${deleted?"—":pct(r.delivery_rate)}</td>
-      <td>${deleted?"—":(r.avg_score==null?"—":r.avg_score+"/10")}</td>
-      <td>${deleted?"—":(r.avg_price==null?"—":r.avg_price)}</td>
+      <td>${deleted?"·":r.jobs}</td>
+      <td>${deleted?"·":pct(r.delivery_rate)}</td>
+      <td>${deleted?"·":(r.avg_score==null?"·":r.avg_score+"/10")}</td>
+      <td>${deleted?"·":(r.avg_price==null?"·":r.avg_price)}</td>
       <td class="wide">${deleted?"No memory: no priors to reason from.":r.reason}</td>
     </tr>`;}).join("");
 
